@@ -1,6 +1,27 @@
 import './App.css';
 import React, { Component } from 'react'
 
+const serverURL = "http://cab2-108-53-232-66.ngrok.io";
+
+const mapPrompt = (prompt) => {
+  console.log(prompt)
+// {text: '', isLie: true}
+// {prompt: '', isLie: true}
+  const newPrompt = {
+    prompt: prompt.text,
+    isLie: prompt.isLie
+  }
+  return newPrompt;
+}
+
+const mapVote = (username, vote) => {
+  const newVote = {
+    userName: username,
+    promptVote: parseInt(vote)
+  }
+  return newVote;
+}
+
 export class App extends Component {
   state = {
     username: '',
@@ -89,6 +110,61 @@ export class App extends Component {
     event.preventDefault();
   }
 
+  async pingDetails(username) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', "x-Trigger": "CORS", },
+      body: JSON.stringify({ username })
+    }
+    const response = await fetch(`${serverURL}/ping`, requestOptions);
+    const pingResponse = await response.text();
+    return pingResponse;
+  }
+
+  async promptSubmit(username, promptOne, promptTwo, promptThree) {
+    console.log(promptOne, promptTwo, promptThree);
+    const mappedPromptOne = mapPrompt(promptOne);
+    const mappedPromptTwo = mapPrompt(promptTwo);
+    const mappedPromptThree = mapPrompt(promptThree);
+    console.log(mappedPromptOne)
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', "x-Trigger": "CORS", },
+      body: JSON.stringify({ 
+        userName: username,
+        prompts: {
+          promptOne: mappedPromptOne,
+          promptTwo: mappedPromptTwo,
+          promptThree: mappedPromptThree
+        }
+      })
+    }
+    console.log('Sent prompts')
+    const response = await fetch(`${serverURL}/prompt-submit`, requestOptions);
+    const promptResponse = await response.text();
+    console.log(promptResponse);
+    return promptResponse;
+  }
+
+  async voteSubmit(username, vote) {
+    const mappedVote = mapVote(username, vote)
+    console.log(mappedVote)
+    console.log(typeof(mappedVote.promptVote))
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', "x-Trigger": "CORS", },
+      body: JSON.stringify({ 
+        userName: mappedVote.userName,
+        promptVote: mappedVote.promptVote
+      })
+    }
+    console.log('Sent vote')
+    const response = await fetch(`${serverURL}/prompt-vote`, requestOptions);
+    const voteResponse = await response.text();
+    console.log(voteResponse)
+    return voteResponse;
+  }
+
   showDetails = () => {
 		return (
 			<div>
@@ -164,8 +240,9 @@ export class App extends Component {
 					value={vote}
 					onChange={this.handleVoteChange}
 					/>
-					<button>Send Prompt</button>
-          <button>Send Vote</button>
+					<button onClick={() => {this.promptSubmit(username, promptOne, promptTwo, promptThree)}}>Send Prompt</button>
+          <button onClick={() => {this.voteSubmit(username, vote)}}>Send Vote</button>
+          <button onClick={() => {this.pingDetails(username)}}>Send Ping</button>
 				</form>
         {this.showDetails()}
       </div>
