@@ -315,10 +315,11 @@ export class App extends Component {
             {this.state.fetchedVoteOne}
 
             <label>Vote 2:</label>
-            
+            {this.state.fetchedVoteTwo}
 
             <label>Vote 3:</label>
-          
+            {this.state.fetchedVoteThree}
+
           </div>
           <button onClick={() => {this.getPollPrompt()}}>Get Poll</button>
       </div>
