@@ -1,5 +1,6 @@
 import './App.css';
 import React, { Component } from 'react'
+import FetchedPrompt from './components/FetchedPrompt';
 
 const serverURL = "http://ce44-108-53-232-66.ngrok.io";
 
@@ -191,7 +192,7 @@ export class App extends Component {
     return requestOptions.text();
   }
 
-  async getPollPrompt() {
+  getPollPrompt = async () => {
     const currentPoll = await this.promptPoll();
     const parsedPoll = JSON.parse(currentPoll);
     console.log('current poll', currentPoll)
@@ -287,6 +288,8 @@ export class App extends Component {
 					<input
 					name='vote'
           type='number'
+          min='1'
+          max='3'
 					value={vote}
 					onChange={this.handleVoteChange}
 					/>
@@ -295,33 +298,19 @@ export class App extends Component {
           <button onClick={() => {this.voteSubmit(username, vote)}}>Send Vote</button>
           <button onClick={() => {this.pingDetails(username)}}>Send Ping</button>
           {/* {this.showDetails()} */}
-          <hr></hr>
-          <h1>From the server</h1>
-          <div>
-            <label>Fetched Username:</label>
-            {this.state.fetchedUsername}
-            <br />
-            <label>Prompt 1:</label>
-            {this.state.fetchedPromptOne.prompt}
-            <br />
-            <label>Prompt 2:</label>
-            {this.state.fetchedPromptTwo.prompt}
-            <br />
-            <label>Prompt 3:</label>
-            {this.state.fetchedPromptThree.prompt}
-            <br />
-            
-            <label>Vote 1:</label>
-            {this.state.fetchedVoteOne}
+          <hr />
+          <FetchedPrompt
+          fetchedUsernameProp={this.state.fetchedUsername}
 
-            <label>Vote 2:</label>
-            {this.state.fetchedVoteTwo}
+          fetchedPromptOneProp={this.state.fetchedPromptOne.prompt}
+          fetchedPromptTwoProp={this.state.fetchedPromptTwo.prompt}
+          fetchedPromptThreeProp={this.state.fetchedPromptThree.prompt}
 
-            <label>Vote 3:</label>
-            {this.state.fetchedVoteThree}
-
-          </div>
-          <button onClick={() => {this.getPollPrompt()}}>Get Poll</button>
+          fetchedVoteOneProp={this.state.fetchedVoteOne}
+          fetchedVoteTwoProp={this.state.fetchedVoteTwo}
+          fetchedVoteThreeProp={this.state.fetchedVoteThree}
+          clickPoll={this.getPollPrompt}
+          />
       </div>
     )
   }
