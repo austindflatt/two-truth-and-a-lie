@@ -1,7 +1,7 @@
 import './App.css';
 import React, { Component } from 'react'
 
-const serverURL = "http://cab2-108-53-232-66.ngrok.io";
+const serverURL = "http://ce44-108-53-232-66.ngrok.io";
 
 const mapPrompt = (prompt) => {
   console.log(prompt)
@@ -37,22 +37,42 @@ export class App extends Component {
     promptThree: {
       text: '',
       isLie: false
-    }
+    },
+    fetchedUsername: '',
+    fetchedPromptOne: {
+      prompt: '',
+      isLie: false
+    },
+    fetchedPromptTwo: {
+      prompt: '',
+      isLie: false
+    },
+    fetchedPromptThree: {
+      prompt: '',
+      isLie: false
+    },
+
+    fetchedVoteOne: '',
+    fetchedVoteTwo: '',
+    fetchedVoteThree: '',
   }
 
   handleUsernameChange = (event) => {
+    event.preventDefault();
     this.setState({
       username: event.target.value,
     })
   }
 
   handleVoteChange = (event) => {
+    event.preventDefault();
     this.setState({
       vote: event.target.value,
     })
   }
 
   handlePromptOneChange = (event) => {
+    event.preventDefault();
     this.setState({
       promptOne: {
         ...this.state.promptOne,
@@ -71,6 +91,7 @@ export class App extends Component {
   }
 
   handlePromptTwoChange = (event) => {
+    event.preventDefault();
     this.setState({
       promptTwo: {
         ...this.state.promptTwo,
@@ -89,6 +110,7 @@ export class App extends Component {
   }
 
   handlePromptThreeChange = (event) => {
+    event.preventDefault();
     this.setState({
       promptThree: {
         ...this.state.promptThree,
@@ -105,11 +127,7 @@ export class App extends Component {
       }
     })
   }
-
-  handleOnSubmit = (event) => {
-    event.preventDefault();
-  }
-
+  
   async pingDetails(username) {
     const requestOptions = {
       method: 'POST',
@@ -165,6 +183,32 @@ export class App extends Component {
     return voteResponse;
   }
 
+  async promptPoll() {
+    const requestOptions = await fetch (`${serverURL}/prompt-poll`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', "x-Trigger": "CORS", },
+    })
+    return requestOptions.text();
+  }
+
+  async getPollPrompt() {
+    const currentPoll = await this.promptPoll();
+    const parsedPoll = JSON.parse(currentPoll);
+    console.log('current poll', currentPoll)
+    console.log('parsed poll', parsedPoll)
+    this.setState({
+      fetchedUsername: parsedPoll.currentPrompt.userName,
+      
+      fetchedPromptOne: parsedPoll.currentPrompt.prompts.promptOne,
+      fetchedPromptTwo: parsedPoll.currentPrompt.prompts.promptTwo,
+      fetchedPromptThree: parsedPoll.currentPrompt.prompts.promptThree,
+
+      fetchedVoteOne: parsedPoll.promptVotes[1],
+      fetchedVoteTwo: parsedPoll.promptVotes[2],
+      fetchedVoteThree: parsedPoll.promptVotes[3],
+    })
+  }
+
   showDetails = () => {
 		return (
 			<div>
@@ -186,7 +230,6 @@ export class App extends Component {
     return (
       <div className='App'>
         <h1>Two Truths and a Lie</h1>
-        <form onSubmit={this.handleOnSubmit}>
 					<label>Username:</label>
 					<input
 					name='newUsername'
@@ -194,6 +237,7 @@ export class App extends Component {
 					value={username}
 					onChange={this.handleUsernameChange}
 					/>
+          <br />
           <label>Prompt 1:</label>
 					<input
 					name='PromptOne'
@@ -201,12 +245,14 @@ export class App extends Component {
 					value={promptOne.text}
 					onChange={this.handlePromptOneChange}
 					/>
+          <br />
           <label>isLie:</label>
           <input
           type='checkbox'
 					checked={promptOne.isLie}
 					onChange={this.handlePromptOneBox}
 					/>
+          <br />
           <label>Prompt 2:</label>
 					<input
 					name='promptTwo'
@@ -214,12 +260,14 @@ export class App extends Component {
 					value={promptTwo.text}
 					onChange={this.handlePromptTwoChange}
 					/>
+          <br />
           <label>isLie:</label>
           <input
           type='checkbox'
 					checked={promptTwo.isLie}
 					onChange={this.handlePromptTwoBox}
 					/>
+          <br />
           <label>Prompt 3:</label>
 					<input
 					name='promptThree'
@@ -227,12 +275,14 @@ export class App extends Component {
 					value={promptThree.text}
 					onChange={this.handlePromptThreeChange}
 					/>
+          <br />
           <label>isLie:</label>
           <input
           type='checkbox'
 					checked={promptThree.isLie}
 					onChange={this.handlePromptThreeBox}
 					/>
+          <br />
           <label>Vote:</label>
 					<input
 					name='vote'
@@ -240,11 +290,37 @@ export class App extends Component {
 					value={vote}
 					onChange={this.handleVoteChange}
 					/>
+          <br /><br />
 					<button onClick={() => {this.promptSubmit(username, promptOne, promptTwo, promptThree)}}>Send Prompt</button>
           <button onClick={() => {this.voteSubmit(username, vote)}}>Send Vote</button>
           <button onClick={() => {this.pingDetails(username)}}>Send Ping</button>
-				</form>
-        {this.showDetails()}
+          {/* {this.showDetails()} */}
+          <hr></hr>
+          <h1>From the server</h1>
+          <div>
+            <label>Fetched Username:</label>
+            {this.state.fetchedUsername}
+            <br />
+            <label>Prompt 1:</label>
+            {this.state.fetchedPromptOne.prompt}
+            <br />
+            <label>Prompt 2:</label>
+            {this.state.fetchedPromptTwo.prompt}
+            <br />
+            <label>Prompt 3:</label>
+            {this.state.fetchedPromptThree.prompt}
+            <br />
+            
+            <label>Vote 1:</label>
+            {this.state.fetchedVoteOne}
+
+            <label>Vote 2:</label>
+            
+
+            <label>Vote 3:</label>
+          
+          </div>
+          <button onClick={() => {this.getPollPrompt()}}>Get Poll</button>
       </div>
     )
   }
